@@ -53,9 +53,11 @@
             return nil;
         case HHPresentStyleSlipFromTop:
         case HHPresentStyleSlipFromBottom:
-        case HHPresentStyleSlipFromLeft:
-        case HHPresentStyleSlipFromRight:
             return [HHPresentFlipTransition flipTransitionWithStyle:dismissed.presentStyle isBegining:NO];
+        case HHPresentStyleSlipFromLeft:
+            return [HHPresentFlipTransition flipTransitionWithStyle:HHPresentStyleSlipFromRight isBegining:NO];
+        case HHPresentStyleSlipFromRight:
+            return [HHPresentFlipTransition flipTransitionWithStyle:HHPresentStyleSlipFromLeft isBegining:NO];
         case HHPresentStyleCircle:
             return [HHPresentCircleTransition transitionWithIsBegining:NO];
         case HHPresentStyleTilted:

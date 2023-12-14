@@ -63,9 +63,11 @@
                 return nil;
             case HHPushStyleSlipFromTop:
             case HHPushStyleSlipFromBottom:
-            case HHPushStyleSlipFromLeft:
-            case HHPushStyleSlipFromRight:
                 return [HHInteractionFlipTransition flipTransitionWithStyle:fromVC.pushStyle isBegining:NO];
+            case HHPushStyleSlipFromLeft:
+                return [HHInteractionFlipTransition flipTransitionWithStyle:HHPushStyleSlipFromRight isBegining:NO];
+            case HHPushStyleSlipFromRight:
+                return [HHInteractionFlipTransition flipTransitionWithStyle:HHPushStyleSlipFromLeft isBegining:NO];
             case HHPushStyleTilted:
                 return [HHInteractionTiltedTransition transitionWithIsBegining:NO];
             case HHPushStyleDrawer:

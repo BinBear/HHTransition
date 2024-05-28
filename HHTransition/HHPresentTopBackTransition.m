@@ -8,86 +8,95 @@
 
 #import "HHPresentTopBackTransition.h"
 #import "UIViewController+HHTransitionProperty.h"
+#import "UIView+HHAnimator.h"
 
 @implementation HHPresentTopBackTransition
+
+- (NSTimeInterval)transitionDuration:(nullable id<UIViewControllerContextTransitioning>)transitionContext {
+    return 0.6;
+}
 
 - (void)beginTransitionWithTransitionContext:(id<UIViewControllerContextTransitioning>)transitionContext {
     UIView *containerView = transitionContext.containerView;
 
     UIViewController *fromVC = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    if ([fromVC isKindOfClass:UITabBarController.class]) {
-        UITabBarController *tabBarVC = (UITabBarController *)fromVC;
-        fromVC = tabBarVC.selectedViewController;
+    if (![fromVC isKindOfClass:UITabBarController.class] && fromVC.tabBarController) {
+        fromVC = fromVC.tabBarController;
+    } else if (![fromVC isKindOfClass:UINavigationController.class] && fromVC.navigationController) {
+        fromVC = fromVC.navigationController;
     }
-    if ([fromVC isKindOfClass:UINavigationController.class]) {
-        UINavigationController *navVC = (UINavigationController *)fromVC;
-        fromVC = navVC.topViewController;
-    }
+    UIView *fromView = fromVC.view;
+    UIView *snapshotView = [fromView snapshotViewAfterScreenUpdates:false];
+    snapshotView.frame = containerView.bounds;
+    snapshotView.tag = 1030201;
+    [containerView addSubview:snapshotView];
+    containerView.backgroundColor = [UIColor blackColor];
+    
     UIViewController *toVC = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     UIView *translucentView = toVC.translucentView;
-    translucentView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.3];
     translucentView.frame = containerView.bounds;
     [containerView addSubview:translucentView];
     
-    UIView *fromView = fromVC.view;
     UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
     [containerView addSubview:toView];
     
     toView.frame = containerView.bounds;
     toView.hh_y = toView.hh_height;
     translucentView.alpha = 0;
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
+    [UIView hh_animateWithDuration:[self transitionDuration:transitionContext] animations:^{
         toView.hh_y = 0;
         translucentView.alpha = 1;
-        fromView.layer.cornerRadius = 20;
-        fromView.layer.masksToBounds = true;
+        snapshotView.layer.cornerRadius = 20;
+        snapshotView.layer.masksToBounds = true;
         if (mISiPhoneX) {
-            fromView.transform = CGAffineTransformMakeScale(0.92, 0.9);
-        }else{
-            fromView.transform = CGAffineTransformMakeScale(0.92, 0.94);
+            snapshotView.transform = CGAffineTransformMakeScale(0.94, 0.9);
+        } else {
+            snapshotView.transform = CGAffineTransformMakeScale(0.94, 0.94);
         }
-    } completion:^(BOOL finished) {
+    } completion:^(UIViewAnimatingPosition finalPosition) {
         toView.hh_y = 0;
-        fromView.layer.cornerRadius = 20;
-        fromView.layer.masksToBounds = true;
+        snapshotView.layer.cornerRadius = 20;
+        snapshotView.layer.masksToBounds = true;
         if (mISiPhoneX) {
-            fromView.transform = CGAffineTransformMakeScale(0.92, 0.9);
-        }else{
-            fromView.transform = CGAffineTransformMakeScale(0.92, 0.94);
+            snapshotView.transform = CGAffineTransformMakeScale(0.94, 0.9);
+        } else {
+            snapshotView.transform = CGAffineTransformMakeScale(0.94, 0.94);
         }
         [transitionContext completeTransition:YES];
     }];
 }
 
 - (void)endTransitionWithTransitionContext:(id<UIViewControllerContextTransitioning>)transitionContext {
+    UIView *containerView = transitionContext.containerView;
+    UIView *snapshotView = [containerView viewWithTag:1030201];
+    
     UIViewController *fromVC = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     UIView *translucentView = fromVC.translucentView;
     UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
     
     UIViewController *toVC = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-    if ([toVC isKindOfClass:UITabBarController.class]) {
-        UITabBarController *tabBarVC = (UITabBarController *)toVC;
-        toVC = tabBarVC.selectedViewController;
-    }
-    if ([toVC isKindOfClass:UINavigationController.class]) {
-        UINavigationController *navVC = (UINavigationController *)toVC;
-        toVC = navVC.topViewController;
+    if (![toVC isKindOfClass:UITabBarController.class] && toVC.tabBarController) {
+        toVC = toVC.tabBarController;
+    } else if (![toVC isKindOfClass:UINavigationController.class] && toVC.navigationController) {
+        toVC = toVC.navigationController;
     }
     UIView *toView = toVC.view;
         
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] animations:^{
+    [UIView hh_animateWithDuration:[self transitionDuration:transitionContext] animations:^{
         fromView.hh_y = fromView.hh_height;
-        toView.alpha = 1;
-        toView.layer.cornerRadius = 20;
-        toView.layer.masksToBounds = true;
-        toView.transform = CGAffineTransformIdentity;
+        snapshotView.alpha = 1;
+        snapshotView.layer.cornerRadius = 0;
+        snapshotView.layer.masksToBounds = true;
+        snapshotView.transform = CGAffineTransformIdentity;
         translucentView.alpha = 0;
-    } completion:^(BOOL finished) {
-        toView.alpha = 1;
-        toView.layer.cornerRadius = 20;
-        toView.layer.masksToBounds = true;
-        toView.transform = CGAffineTransformIdentity;
+    } completion:^(UIViewAnimatingPosition finalPosition) {
+        snapshotView.alpha = 1;
+        snapshotView.layer.cornerRadius = 0;
+        snapshotView.layer.masksToBounds = true;
+        snapshotView.transform = CGAffineTransformIdentity;
+        [snapshotView removeFromSuperview];
         [translucentView removeFromSuperview];
+        containerView.backgroundColor = [UIColor clearColor];
         [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
     }];
 }
